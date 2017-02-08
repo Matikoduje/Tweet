@@ -6,3 +6,14 @@ CREATE TABLE `user` (
      PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `tweet` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `user_id` INT NOT NULL,
+    `text` VARCHAR(255) NOT NULL,
+    `tag` VARCHAR(255) NOT NULL,
+    `creation_date` DATETIME,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`user_id`)
+    REFERENCES user(`id`)
+);
+
