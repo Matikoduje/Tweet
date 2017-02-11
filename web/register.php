@@ -4,7 +4,6 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
     if (isset($_POST['email'], $_POST['password'], $_POST['password2'], $_POST['username'])) {
         $isOk = true;
         require_once '../src/connection.php';
-        require_once '../src/User.php';
         $username = $_POST['username'];
         $email = $_POST['email'];
         $password = $_POST['password'];

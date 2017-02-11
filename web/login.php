@@ -20,7 +20,8 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
             exit;
         }
         echo "<p>Zalogowałeś się " . $user->getUsername() . " Twoje id to " . $user->getId() . "</p>";
-        $_SESSION['user'] = $user;
+
+        $_SESSION['user'] = serialize($user);
         header('Location: Index.php');
         exit;
     }

@@ -1,4 +1,6 @@
 <?php
+require_once '../src/User.php';
+require_once '../src/Twitter.php';
 session_start();
 ?>
 <!DOCTYPE html>
@@ -9,10 +11,10 @@ session_start();
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 </head>
 <body>
-<div class="navbar navbar-default navbar-static-top">
+<div class="navbar navbar-inverse navbar-static-top">
     <div class="container">
         <div class="navbar-header">
-            <a href="Index.php" class="navbar-inverse navbar-brand">Twitter</a>
+            <a href="Index.php" class="navbar-brand"><span style="color: #004b63; font-weight: bold; font-size: 200%;" >Twitter</span></a>
         </div>
         <ul class="nav navbar-nav">
             <?php
@@ -21,14 +23,8 @@ session_start();
                 <li>
                     <a href="createTweet.php">Stwórz Twiita</a>
                 </li>
-                <?php
-            } else {
-                ?>
                 <li>
-                    <a href="exe.php">Podstrona 1</a>
-                </li>
-                <li>
-                    <a href="http://news.bootswatch.com">Podstrona 2</a>
+                    <a href="showAll.php">Pokaż wszystkie</a>
                 </li>
                 <?php
             }
@@ -38,13 +34,15 @@ session_start();
             <?php
             if (isset($_SESSION['user'])) {
                 ?>
-                <li><a href="logout.php"><span class="label label-primary" style="color: black">Wyloguj się</span></a>
+                <li><a href="..."><span class="label" style="color: #004b63; font-size: 120%; font-weight: bold;">Edytuj profil</span></a>
+                </li>
+                <li><a href="logout.php"><span class="label" style="color: #800000; font-size: 120%; font-weight: bold;">Wyloguj się</span></a>
                 </li>
                 <?php
             } else {
                 ?>
-                <li><a href="register.php"><span class="label" style="color: black">Zarejestruj się</span></a></li>
-                <li><a href="login.php"><span class="label label-success" style="color: black">Logowanie</span></a></li>
+                <li><a href="register.php"><span class="label" style="color: #004b63; font-size: 120%; font-weight: bold;">Zarejestruj się</span></a></li>
+                <li><a href="login.php"><span class="label" style="color: #008000; font-size: 120%; font-weight: bold;">Logowanie</span></a></li>
                 <?php
             }
             ?>

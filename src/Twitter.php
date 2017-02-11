@@ -74,4 +74,15 @@ class Twitter
             }
         }
     }
+    static public function loadAllTweets(mysqli $conn)
+    {
+        $sql = "SELECT user.username AS `username`, `tag`, `text` FROM tweet JOIN user ON tweet.user_id=user.id";
+        $conn->query("SET NAMES 'utf8'");
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
 }

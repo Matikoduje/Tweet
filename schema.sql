@@ -1,3 +1,5 @@
+CREATE DATABASE Tweeter CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 CREATE TABLE `user` (
     `id` INT AUTO_INCREMENT,
     `email` VARCHAR(255) UNIQUE NOT NULL,
