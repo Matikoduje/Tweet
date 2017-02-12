@@ -19,3 +19,14 @@ CREATE TABLE `tweet` (
     REFERENCES user(`id`)
 );
 
+CREATE TABLE `comment` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `user_id` INT NOT NULL,
+    `tweet_id` INT NOT NULL,
+    `text` VARCHAR(130) NOT NULL,
+    `creation_date` DATETIME,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES user(`id`),
+    FOREIGN KEY (`tweet_id`) REFERENCES tweet(`id`)
+);
+

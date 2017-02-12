@@ -24,11 +24,6 @@ class Twitter
         $this->creationDate = $creationDate;
     }
 
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
     public function setTag($tag)
     {
         $this->tag = $tag;
@@ -76,7 +71,29 @@ class Twitter
     }
     static public function loadAllTweets(mysqli $conn)
     {
-        $sql = "SELECT user.username AS `username`, `tag`, `text` FROM tweet JOIN user ON tweet.user_id=user.id";
+        $sql = "SELECT user.username AS `username`, user.id AS `userId`, `tag`, `text`, tweet.id AS `tweetId` FROM tweet JOIN user ON tweet.user_id=user.id ORDER BY `tweetId` DESC";
+        $conn->query("SET NAMES 'utf8'");
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
+    static public function loadTweetById(mysqli $conn, $id)
+    {
+        $sql = "SELECT user.username AS `username`, `tag`, `text`, tweet.id AS tweetId, `creation_date` AS dat FROM tweet JOIN user ON tweet.user_id=user.id WHERE tweet.id =" . $id;
+        $conn->query("SET NAMES 'utf8'");
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
+    static public function loadAllTweetsByUserId(mysqli $conn, $userId)
+    {
+        $sql = "SELECT user.username AS `username`, user.id, `tag`, `text`, tweet.id, creation_date AS dat FROM tweet JOIN user ON tweet.user_id=user.id WHERE tweet.user_id=" . $userId . " ORDER BY dat DESC";
         $conn->query("SET NAMES 'utf8'");
         $result = $conn->query($sql);
 
