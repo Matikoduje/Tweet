@@ -90,6 +90,31 @@ class User
         return false;
     }
 
+    static public function loadUserById(mysqli $conn, $id)
+    {
+        $conn->query("SET NAMES 'utf8'");
+        $id = $conn->real_escape_string($id);
+        $sql = "SELECT * FROM `user` WHERE `id` = '$id'";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+
+        if (1 === $result->num_rows) {
+            $userArray = $result->fetch_assoc();
+            $user = new User();
+            $user->setId($userArray['id']);
+            $user->setEmail($userArray['email']);
+            $user->setUsername($userArray['username']);
+            $user->setHash($userArray['password']);
+
+            return $user;
+        }
+
+        return false;
+    }
+
     public function validateEmail($email)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -152,7 +177,8 @@ class User
         }
     }
 
-    public function compareUsername($conn, $username) {
+    public function compareUsername($conn, $username)
+    {
         $conn->query("SET NAMES 'utf8'");
         $sql = "SELECT COUNT(id) AS id FROM `user` WHERE username='" . $username . "'";
         $result = $conn->query($sql);
@@ -165,7 +191,8 @@ class User
         }
     }
 
-    public function compareEmail($conn, $email) {
+    public function compareEmail($conn, $email)
+    {
         $conn->query("SET NAMES 'utf8'");
         $sql = "SELECT COUNT(id) AS id FROM `user` WHERE email='" . $email . "'";
         $result = $conn->query($sql);
@@ -176,5 +203,32 @@ class User
         foreach ($result as $row) {
             return $row['id'];
         }
+    }
+
+    public function changeEmail($conn)
+    {
+        $conn->query("SET NAMES 'utf8'");
+        $this->email = $conn->real_escape_string($this->email);
+        $sql = "UPDATE `user` SET email='" . $this->email . "' WHERE id=$this->id";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+
+        return true;
+    }
+
+    public function changePassword($conn)
+    {
+        $conn->query("SET NAMES 'utf8'");
+        $sql = "UPDATE `user` SET password='" . $this->password . "' WHERE id=$this->id";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+
+        return true;
     }
 }

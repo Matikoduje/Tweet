@@ -1,6 +1,7 @@
 <?php
 require_once '../src/connection.php';
 require_once '../src/User.php';
+require_once '../src/Message.php';
 session_start();
 ?>
 <!DOCTYPE html>

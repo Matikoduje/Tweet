@@ -27,6 +27,27 @@ if (!isset($_SESSION['user'])) {
             }
 
         }
+        if (isset($_POST['receiverId'], $_POST['messageText'])) {
+            $isOkMessage = true;
+            $receiverId = $_POST['receiverId'];
+            $messageText = $_POST['messageText'];
+            $message = new Message();
+            if (!$message->validateText($messageText)) {
+                echo "<div class=\"alert alert-danger\">";
+                echo "<strong>Wiadomość musi mieć odpowiednią długość !</strong>";
+                echo "</div>";
+                $isOkMessage = false;
+            }
+
+            if ($isOkMessage) {
+                $message->setCreationDate();
+                $message->setIsRead(0);
+                $message->setText($messageText);
+                $message->setSenderId($_SESSION['user']);
+                $message->setReceiverId($receiverId);
+                $message->save($conn);
+            }
+        }
         if (isset($_POST['tag'], $_POST['tweetText'])) {
             $isOk = true;
             $tag = $_POST['tag'];
@@ -226,7 +247,7 @@ if (!isset($_SESSION['user'])) {
         </div>
         <?php
     }
-    if (('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['userTweets'])) || ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['findUser']))) {
+    if (('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['userTweets'])) || ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['findUser'])) || ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['receiverId']))) {
         ?>
         <div class="col-lg-4">
             <div class="twt-wrapper">
@@ -240,6 +261,8 @@ if (!isset($_SESSION['user'])) {
                         <?php
                         if (isset($_POST['userTweets'])) {
                             $userTweets = $_POST['userTweets'];
+                        } else if (isset($_POST['receiverId'])) {
+                            $userTweets = $receiverId;
                         } else {
                             $findUser = $_POST['findUser'];
                             $userTweets = User::findUserIdByUsername($conn, $findUser);
@@ -254,6 +277,13 @@ if (!isset($_SESSION['user'])) {
                                     if (true == $isNameFirst) {
                                         echo "<p><strong class=\"text-primary\">Użytkownik: </strong><strong class=\"text-success\">" . $row['username'] . "</strong></p>";
                                         echo "<div class='clearfix'></div>";
+                                        if ($userTweets != $_SESSION['user']) {
+                                            echo "<form method='post' action='#'>";
+                                            echo "<textarea class=\"form-control\" placeholder=\"Od 10 do 140 znaków...\" rows=\"3\" maxlength=\"130\" name='messageText'></textarea>";
+                                            echo "<br><button class='btn btn-primary btn-xs pull-right' type='submit' name='receiverId' value='" . $userTweets. "'>Wyślij wiadomość</button>";
+                                            echo "</form>";
+                                            echo "<br><br>";
+                                        }
                                         $isNameFirst = false;
                                     }
                                     echo "<li class='media-list'>";
@@ -276,6 +306,13 @@ if (!isset($_SESSION['user'])) {
                             } else {
                                 echo "<p><strong class=\"text-primary\">Użytkownik: </strong><strong class=\"text-success\">" . $findUser . "</strong></p>";
                                 echo "<div class='clearfix'></div>";
+                                if ($userTweets != $_SESSION['user']) {
+                                    echo "<form method='post' action='#'>";
+                                    echo "<textarea class=\"form-control\" placeholder=\"Od 10 do 130 znaków...\" rows=\"3\" maxlength=\"130\" name='messageText'></textarea>";
+                                    echo "<br><button class='btn btn-primary btn-xs pull-right' type='submit' name='receiverId' value='" . $userTweets. "'>Wyślij wiadomość</button>";
+                                    echo "</form>";
+                                    echo "<br><br>";
+                                }
                                 echo "<p class='text-primary'>Użytkownik jeszcze nie twiitował</p>";
                             }
                         }
