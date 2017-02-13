@@ -40,7 +40,7 @@ class Comment
 
     public function validateText($text)
     {
-        if (strlen($text) > 130 ) {
+        if (strlen($text) > 60 || strlen($text) < 5) {
             return false;
         }
         return true;
@@ -49,6 +49,7 @@ class Comment
     public function save(mysqli $conn)
     {
         if (-1 === $this->id) {
+            $this->text = $conn->real_escape_string($this->text);
             $conn->query("SET NAMES 'utf8'");
             $sql = sprintf("INSERT INTO `comment` (`user_id`, `text`, `tweet_id`, `creation_date`) VALUES ('%d', '%s', '%d', '%s')", $this->userID, $this->text, $this->tweetId, $this->creationDate);
             $result = $conn->query($sql);
@@ -63,8 +64,8 @@ class Comment
 
     static public function loadAllCommentsByTweetId(mysqli $conn, $tweetId)
     {
-        $sql = "SELECT user.username AS username, `text`, creation_date AS dat, user.id FROM comment JOIN user ON user_id=user.id WHERE tweet_id=" . $tweetId . " ORDER BY dat DESC";
         $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT user.username AS username, `text`, creation_date AS dat, user.id FROM comment JOIN user ON user_id=user.id WHERE tweet_id=" . $tweetId . " ORDER BY dat DESC";
         $result = $conn->query($sql);
 
         if (!$result) {
@@ -75,13 +76,16 @@ class Comment
 
     static public function countHowManyCommentsByTweetId(mysqli $conn, $tweetId)
     {
-        $sql = "SELECT COUNT(tweet_id) AS `count` FROM comment WHERE tweet_id=" . $tweetId;
         $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT COUNT(tweet_id) AS `count` FROM comment WHERE tweet_id=" . $tweetId;
         $result = $conn->query($sql);
 
         if (!$result) {
             die('Querry error: ' . $conn->error);
         }
-        return $result;
+
+        foreach ($result as $rows) {
+            return $rows['count'];
+        }
     }
 }

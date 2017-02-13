@@ -12,6 +12,9 @@ if (!isset($_SESSION['user'])) {
             $commentText = $_POST['commentText'];
             $comment = new Comment();
             if (!$comment->validateText($commentText)) {
+                echo "<div class=\"alert alert-danger\">";
+                echo "<strong>Komentarz musi mieć odpowiednią długość !</strong>";
+                echo "</div>";
                 $isOkComm = false;
             }
 
@@ -31,9 +34,15 @@ if (!isset($_SESSION['user'])) {
             $tweet = new Twitter();
 
             if (!$tweet->validateTag($tag)) {
+                echo "<div class=\"alert alert-danger\">";
+                echo "<strong>Wybierz tag twiita z listy!</strong>";
+                echo "</div>";
                 $isOk = false;
             }
             if (!$tweet->validateText($tweetText)) {
+                echo "<div class=\"alert alert-danger\">";
+                echo "<strong>Twiit musi mieć odpowiednią długość !</strong>";
+                echo "</div>";
                 $isOk = false;
             }
 
@@ -59,7 +68,7 @@ if (!isset($_SESSION['user'])) {
                 </div>
                 <div class="panel-body">
                     <form action="#" method="post">
-                    <textarea class="form-control" placeholder="Maksymalnie 255 znaków..." rows="5" maxlength="255"
+                    <textarea class="form-control" placeholder="Od 10 do 140 znaków..." rows="5" maxlength="140"
                               name="tweetText"></textarea>
                         <br>
                         <div>
@@ -89,7 +98,8 @@ if (!isset($_SESSION['user'])) {
                     <form action="#" method="post">
                         <div class="form-group">
                             <div class="col-lg-6">
-                                <input type="number" min='0' class="form-control" name="tweetId" placeholder="Id Twiita">
+                                <input type="number" min='0' class="form-control" name="findTweet"
+                                       placeholder="Id Twiita">
                             </div>
                             <div class="form-inline">
                                 <button type="submit" class="form-control btn btn-primary btn-xs">Szukaj</button>
@@ -139,11 +149,7 @@ if (!isset($_SESSION['user'])) {
                                 echo "</p>";
                                 echo "</form>";
                                 $countComments = Comment::countHowManyCommentsByTweetId($conn, $row['tweetId']);
-                                if ($countComments->num_rows == 1) {
-                                    foreach ($countComments as $rows) {
-                                        echo "<small class='text-info'><em>Komentarzy: " . $rows['count'] . "</em></small>";
-                                    }
-                                }
+                                echo "<small class='text-info'><em>Komentarzy: " . $countComments . "</em></small>";
                                 echo "</div>";
                                 echo "</li>";
                             }
@@ -156,7 +162,7 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
     <?php
-    if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['tweetId'])) {
+    if (('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['tweetId'])) || ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['findTweet']))) {
         ?>
         <div class="col-lg-4">
             <div class="twt-wrapper">
@@ -168,39 +174,49 @@ if (!isset($_SESSION['user'])) {
                     </div>
                     <div class="panel-body pre-scrollable" style="max-height: calc(100vh - 150px)">
                         <?php
-                        $tweetId = $_POST['tweetId'];
-                        $tweetDetails = Twitter::loadTweetById($conn, $tweetId);
-                        $commentsDetails = Comment::loadAllCommentsByTweetId($conn, $tweetId);
-                        if ($tweetDetails->num_rows == 1) {
-                            foreach ($tweetDetails as $row) {
-                                echo "<div class='media-body'>";
-                                echo "<p><strong class=\"text-primary\">Autor: </strong><strong class=\"text-success\">" . $row['username'] . "</strong></p>";
-                                echo "<p><strong class=\"text-primary\">Tag: </strong><strong class=\"text-success\">" . $row['tag'] . "</strong></p>";
-                                echo "<p><strong class=\"text-primary\">Treść:</strong></p>";
-                                echo "<p class='text-success'>" . $row['text'] . "</p>";
-                                echo "<p><strong class=\"text-primary\">Data utworzenia: </strong><strong class=\"text-success\">" . $row['dat'] . "</strong></p>";
-                                echo "<form method='post' action='#'>";
-                                echo "<textarea class=\"form-control\" placeholder=\"Maksymalnie 130 znaków...\" rows=\"3\" maxlength=\"130\"
-                              name='commentText'></textarea>";
-                                echo "<br><button class='btn btn-primary btn-xs pull-right' type='submit' name='tweetId' value='" . $row['tweetId'] . "'>Skomentuj</button></form>";
-                                echo "<br><br>";
-                                if ($commentsDetails->num_rows > 0) {
-                                    foreach ($commentsDetails as $rows) {
-                                        echo "<li class='media-list'>";
-                                        echo "<div class='media-body'>";
-                                        echo "<span class=\"text-muted pull-right\">";
-                                        echo "<small class=\"text-muted\">" . $rows['dat'] . "</small></span>";
-                                        echo "<strong class=\"text-success\">" . $rows['username'] . "</strong>";
-                                        echo "<p style='word-wrap: break-word'>";
-                                        echo $rows['text'];
-                                        echo "</p>";
-                                        echo "</div>";
-                                        echo "</li>";
+                        if (isset($_POST['findTweet'])) {
+                            $findTweet = $_POST['findTweet'];
+                            $tweetId = Twitter::findTweetByTweetId($conn, $findTweet);
+                        } else {
+                            $tweetId = $_POST['tweetId'];
+                        }
+                        if (false == $tweetId) {
+                            echo "<div class='media-body'>";
+                            echo "<p>Nie ma twiita o takim id.</p>";
+                            echo "</div>";
+                        } else {
+                            $tweetDetails = Twitter::loadTweetById($conn, $tweetId);
+                            $commentsDetails = Comment::loadAllCommentsByTweetId($conn, $tweetId);
+                            if ($tweetDetails->num_rows == 1) {
+                                foreach ($tweetDetails as $row) {
+                                    echo "<div class='media-body'>";
+                                    echo "<p><form method='post' action='#'><strong class=\"text-primary\">Autor: </strong><button class='btn-link' style='text-decoration: none' type='submit' name='userTweets' value='" . $row['userId'] . "'>" . $row['username'] . "</button></form></p>";
+                                    echo "<p><strong class=\"text-primary\">Tag: </strong><strong class=\"text-success\">" . $row['tag'] . "</strong></p>";
+                                    echo "<p><strong class=\"text-primary\">Treść:</strong></p>";
+                                    echo "<p class='text-success'>" . $row['text'] . "</p>";
+                                    echo "<p><strong class=\"text-primary\">Data utworzenia: </strong><strong class=\"text-success\">" . $row['dat'] . "</strong></p>";
+                                    echo "<form method='post' action='#'>";
+                                    echo "<textarea class=\"form-control\" placeholder=\"Od 5 do 60 znaków...\" rows=\"3\" maxlength=\"60\" name='commentText'></textarea>";
+                                    echo "<br><button class='btn btn-primary btn-xs pull-right' type='submit' name='tweetId' value='" . $row['tweetId'] . "'>Skomentuj</button></form>";
+                                    echo "<br><br>";
+                                    if ($commentsDetails->num_rows > 0) {
+                                        foreach ($commentsDetails as $rows) {
+                                            echo "<li class='media-list'>";
+                                            echo "<div class='media-body'>";
+                                            echo "<span class=\"text-muted pull-right\">";
+                                            echo "<small class=\"text-muted\">" . $rows['dat'] . "</small></span>";
+                                            echo "<strong class=\"text-success\">" . $rows['username'] . "</strong>";
+                                            echo "<p style='word-wrap: break-word'>";
+                                            echo $rows['text'];
+                                            echo "</p>";
+                                            echo "</div>";
+                                            echo "</li>";
+                                        }
+                                    } else {
+                                        echo "<p class='text-primary'>Brak komentarzy</p>";
                                     }
-                                } else {
-                                    echo "<p class='text-primary'>Brak komentarzy</p>";
+                                    echo "</div>";
                                 }
-                                echo "</div>";
                             }
                         }
                         ?>
@@ -226,32 +242,41 @@ if (!isset($_SESSION['user'])) {
                             $userTweets = $_POST['userTweets'];
                         } else {
                             $findUser = $_POST['findUser'];
-                            $userIdByUsername = User::findUserIdByUsername($conn, $findUser);
-                            if ($userIdByUsername->num_rows == 1) {
-                                foreach ($userIdByUsername as $row) {
-                                    $userTweets = $row['id'];
-                                }
-                            }
+                            $userTweets = User::findUserIdByUsername($conn, $findUser);
                         }
-                        $tweetList = Twitter::loadAllTweetsByUserId($conn, $userTweets);
-                        $isNameFirst = true;
-                        if ($tweetList->num_rows >= 1) {
-                            foreach ($tweetList as $row) {
-                                if (true == $isNameFirst) {
-                                    echo "<p><strong class=\"text-primary\">Użytkownik: </strong><strong class=\"text-success\">" . $row['username'] . "</strong></p>";
-                                    echo "<div class='clearfix'></div>";
-                                    $isNameFirst = false;
+                        if (false == $userTweets) {
+                            echo "<p>Nie ma takiego użytkownika</p>";
+                        } else {
+                            $tweetList = Twitter::loadAllTweetsByUserId($conn, $userTweets);
+                            $isNameFirst = true;
+                            if ($tweetList->num_rows >= 1) {
+                                foreach ($tweetList as $row) {
+                                    if (true == $isNameFirst) {
+                                        echo "<p><strong class=\"text-primary\">Użytkownik: </strong><strong class=\"text-success\">" . $row['username'] . "</strong></p>";
+                                        echo "<div class='clearfix'></div>";
+                                        $isNameFirst = false;
+                                    }
+                                    echo "<li class='media-list'>";
+                                    echo "<div class='media-body'>";
+                                    echo "<form action='#' method='post'>";
+                                    echo "<span class=\"text-muted pull-right\">";
+                                    echo "<small class=\"text-muted\">" . $row['dat'] . "</small></span>";
+                                    echo "<strong class=\"text-success\">" . $row['tag'] . "</strong>";
+                                    echo "<p style='word-wrap: break-word'>";
+                                    echo "<button class='btn-link' style='text-align: left; text-decoration: none; color: black' type='submit' name='tweetId' value='" . $row['tweetId'] . "'>";
+                                    echo $row['text'];
+                                    echo "</button>";
+                                    echo "</p>";
+                                    echo "</form>";
+                                    $countComments = Comment::countHowManyCommentsByTweetId($conn, $row['tweetId']);
+                                    echo "<small class='text-info'><em>Komentarzy: " . $countComments . "</em></small>";
+                                    echo "</div>";
+                                    echo "</li>";
                                 }
-                                echo "<li class='media-list'>";
-                                echo "<div class='media-body'>";
-                                echo "<span class=\"text-muted pull-right\">";
-                                echo "<small class=\"text-muted\">" . $row['dat'] . "</small></span>";
-                                echo "<strong class=\"text-success\">" . $row['tag'] . "</strong>";
-                                echo "<p style='word-wrap: break-word'>";
-                                echo $row['text'];
-                                echo "</p>";
-                                echo "</div>";
-                                echo "</li>";
+                            } else {
+                                echo "<p><strong class=\"text-primary\">Użytkownik: </strong><strong class=\"text-success\">" . $findUser . "</strong></p>";
+                                echo "<div class='clearfix'></div>";
+                                echo "<p class='text-primary'>Użytkownik jeszcze nie twiitował</p>";
                             }
                         }
                         ?>

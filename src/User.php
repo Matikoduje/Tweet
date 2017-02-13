@@ -122,13 +122,20 @@ class User
     static public function findUserIdByUsername($conn, $username)
     {
         $conn->query("SET NAMES 'utf8'");
+        $username = $conn->real_escape_string($username);
         $sql = "SELECT id FROM `user` WHERE username='" . $username . "'";
         $result = $conn->query($sql);
 
         if (!$result) {
             die('Querry error: ' . $conn->error);
         }
-        return $result;
+        foreach ($result as $row) {
+            if (null != $row['id']) {
+                return $row['id'];
+            } else {
+                return false;
+            }
+        }
     }
 
     static public function findUserNameByUserId($conn, $id)
