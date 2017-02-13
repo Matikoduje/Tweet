@@ -1,9 +1,8 @@
 <?php
 include('templates/header.php');
 if (!isset($_SESSION['user'])) {
-    echo "<h4>Witam na stronie. Aby móc korzystać z serwisu należy się zalogować</h4>";
+    echo "<p class='text-primary' style='text-align: center; font-size: large'>Witam na stronie. Aby móc korzystać z serwisu należy się zalogować.</p>";
 } else {
-    require_once '../src/connection.php';
     require_once '../src/Comment.php';
     require_once '../src/Twitter.php';
     if ('POST' === $_SERVER['REQUEST_METHOD']) {
@@ -17,13 +16,11 @@ if (!isset($_SESSION['user'])) {
             }
 
             if ($isOkComm) {
-                $obj = unserialize($_SESSION['user']);
                 $comment->setCreationDate();
                 $comment->setText($commentText);
-                $comment->setUserID($obj->getId());
+                $comment->setUserID($_SESSION['user']);
                 $comment->setTweetId($tweetId);
                 $comment->save($conn);
-                unset($obj);
             }
 
         }
@@ -41,14 +38,12 @@ if (!isset($_SESSION['user'])) {
             }
 
             if ($isOk) {
-                $obj = unserialize($_SESSION['user']);
                 $tweet->setTag($tag);
                 $tweet->setText($tweetText);
                 $tweet->setCreationDate();
-                $tweet->setUserID($obj->getId());
+                $tweet->setUserID($_SESSION['user']);
 
                 $tweet->save($conn);
-                unset($obj);
             }
         }
     }
@@ -84,6 +79,35 @@ if (!isset($_SESSION['user'])) {
                     </form>
                 </div>
             </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                        <span style="text-align: center; color: #004b63;">
+                            Wyszukiwanie
+                        </span>
+                </div>
+                <div class="panel-body">
+                    <form action="#" method="post">
+                        <div class="form-group">
+                            <div class="col-lg-6">
+                                <input type="number" min='0' class="form-control" name="tweetId" placeholder="Id Twiita">
+                            </div>
+                            <div class="form-inline">
+                                <button type="submit" class="form-control btn btn-primary btn-xs">Szukaj</button>
+                            </div>
+                        </div>
+                    </form>
+                    <form action="#" method="post">
+                        <div class="form-group">
+                            <div class="col-lg-6">
+                                <input type="text" class="form-control" name="findUser" placeholder="Użytkownik">
+                            </div>
+                            <div class="form-inline">
+                                <button type="submit" class="form-control btn btn-primary btn-xs">Szukaj</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-lg-4">
@@ -109,11 +133,17 @@ if (!isset($_SESSION['user'])) {
                                 echo $row['username'];
                                 echo "</button>";
                                 echo "<p style='word-wrap: break-word'>";
-                                echo "<button class='btn-link' style='text-align: left; text-decoration: none; color: black' type='submit' name='info' value='" . $row['tweetId'] . "'>";
+                                echo "<button class='btn-link' style='text-align: left; text-decoration: none; color: black' type='submit' name='tweetId' value='" . $row['tweetId'] . "'>";
                                 echo $row['text'];
                                 echo "</button>";
                                 echo "</p>";
                                 echo "</form>";
+                                $countComments = Comment::countHowManyCommentsByTweetId($conn, $row['tweetId']);
+                                if ($countComments->num_rows == 1) {
+                                    foreach ($countComments as $rows) {
+                                        echo "<small class='text-info'><em>Komentarzy: " . $rows['count'] . "</em></small>";
+                                    }
+                                }
                                 echo "</div>";
                                 echo "</li>";
                             }
@@ -126,7 +156,7 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
     <?php
-    if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['info'])) {
+    if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['tweetId'])) {
         ?>
         <div class="col-lg-4">
             <div class="twt-wrapper">
@@ -138,9 +168,9 @@ if (!isset($_SESSION['user'])) {
                     </div>
                     <div class="panel-body pre-scrollable" style="max-height: calc(100vh - 150px)">
                         <?php
-                        $info = $_POST['info'];
-                        $tweetDetails = Twitter::loadTweetById($conn, $info);
-                        $commentsDetails = Comment::loadAllCommentsByTweetId($conn, $info);
+                        $tweetId = $_POST['tweetId'];
+                        $tweetDetails = Twitter::loadTweetById($conn, $tweetId);
+                        $commentsDetails = Comment::loadAllCommentsByTweetId($conn, $tweetId);
                         if ($tweetDetails->num_rows == 1) {
                             foreach ($tweetDetails as $row) {
                                 echo "<div class='media-body'>";
@@ -180,7 +210,7 @@ if (!isset($_SESSION['user'])) {
         </div>
         <?php
     }
-    if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['userTweets'])) {
+    if (('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['userTweets'])) || ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['findUser']))) {
         ?>
         <div class="col-lg-4">
             <div class="twt-wrapper">
@@ -192,7 +222,17 @@ if (!isset($_SESSION['user'])) {
                     </div>
                     <div class="panel-body pre-scrollable" style="max-height: calc(100vh - 150px)">
                         <?php
-                        $userTweets = $_POST['userTweets'];
+                        if (isset($_POST['userTweets'])) {
+                            $userTweets = $_POST['userTweets'];
+                        } else {
+                            $findUser = $_POST['findUser'];
+                            $userIdByUsername = User::findUserIdByUsername($conn, $findUser);
+                            if ($userIdByUsername->num_rows == 1) {
+                                foreach ($userIdByUsername as $row) {
+                                    $userTweets = $row['id'];
+                                }
+                            }
+                        }
                         $tweetList = Twitter::loadAllTweetsByUserId($conn, $userTweets);
                         $isNameFirst = true;
                         if ($tweetList->num_rows >= 1) {

@@ -6,24 +6,25 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
         require_once '../src/User.php';
         $username = $_POST['username'];
         $password = $_POST['password'];
-
-        $user=USER::loadUserByUsername($conn, $username);
+        $isOk = true;
+        $user = USER::loadUserByUsername($conn, $username);
         if (false === $user) {
-            echo "<p>Podano nieprawidłowy login bądź hasło</p>";
-            exit;
+            echo "<div class=\"alert alert-danger\">";
+            echo "<strong>Podano nieprawidłowy login bądź hasło!</strong>";
+            echo "</div>";
         }
 
-        if (password_verify($password, $user->getPassword())) {
-            $_SESSION['user'] = $user->getId();
-        } else {
-            echo "<p>Podano nieprawidłowy login bądź hasło</p>";
-            exit;
+        if (false != $user) {
+            if (password_verify($password, $user->getPassword())) {
+                $_SESSION['user'] = $user->getId();
+                header('Location: Index.php');
+                exit;
+            } else {
+                echo "<div class=\"alert alert-danger\">";
+                echo "<strong>Podano nieprawidłowy login bądź hasło!</strong>";
+                echo "</div>";
+            }
         }
-        echo "<p>Zalogowałeś się " . $user->getUsername() . " Twoje id to " . $user->getId() . "</p>";
-
-        $_SESSION['user'] = serialize($user);
-        header('Location: Index.php');
-        exit;
     }
 }
 ?>

@@ -67,9 +67,9 @@ class User
 
     static public function loadUserByUsername(mysqli $conn, $username)
     {
+        $conn->query("SET NAMES 'utf8'");
         $username = $conn->real_escape_string($username);
         $sql = "SELECT * FROM `user` WHERE `username` = '$username'";
-        $conn->query("SET NAMES 'utf8'");
         $result = $conn->query($sql);
 
         if (!$result) {
@@ -86,6 +86,8 @@ class User
 
             return $user;
         }
+
+        return false;
     }
 
     public function validateEmail($email)
@@ -106,7 +108,7 @@ class User
 
     public function validateUsername($username)
     {
-        if (strlen($username) > 255 ) {
+        if (strlen($username) > 15 || strlen($username) < 3) {
             return false;
         }
         return true;
@@ -115,5 +117,57 @@ class User
     public function getUsername()
     {
         return $this->username;
+    }
+
+    static public function findUserIdByUsername($conn, $username)
+    {
+        $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT id FROM `user` WHERE username='" . $username . "'";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
+
+    static public function findUserNameByUserId($conn, $id)
+    {
+        $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT username FROM `user` WHERE id='" . $id . "'";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        foreach ($result as $row) {
+            return $row['username'];
+        }
+    }
+
+    public function compareUsername($conn, $username) {
+        $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT COUNT(id) AS id FROM `user` WHERE username='" . $username . "'";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        foreach ($result as $row) {
+            return $row['id'];
+        }
+    }
+
+    public function compareEmail($conn, $email) {
+        $conn->query("SET NAMES 'utf8'");
+        $sql = "SELECT COUNT(id) AS id FROM `user` WHERE email='" . $email . "'";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        foreach ($result as $row) {
+            return $row['id'];
+        }
     }
 }

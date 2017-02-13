@@ -11,12 +11,33 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 
         $user = new User();
         if (!$user->validateEmail($email)) {
+            echo "<div class=\"alert alert-danger\">";
+            echo "<strong>Wprowadzono nie poprawny adres e-mail!</strong>";
+            echo "</div>";
             $isOk = false;
         }
-        if (!$user->validatePassword($password,$password2)) {
+        if (!$user->validatePassword($password, $password2)) {
+            echo "<div class=\"alert alert-danger\">";
+            echo "<strong>Wprowadzone hasła są różne!</strong>";
+            echo "</div>";
             $isOk = false;
         }
         if (!$user->validateUsername($username)) {
+            echo "<div class=\"alert alert-danger\">";
+            echo "<strong>Login musi mieć co najmniej 3 znaki ale nie więcej niż 15!</strong>";
+            echo "</div>";
+            $isOk = false;
+        }
+        if (0 != $user->compareUsername($conn, $username)) {
+            echo "<div class=\"alert alert-info\">";
+            echo "<strong>Użytkownik o podanym loginie jest już w bazie</strong>";
+            echo "</div>";
+            $isOk = false;
+        }
+        if (0 != $user->compareEmail($conn, $email)) {
+            echo "<div class=\"alert alert-info\">";
+            echo "<strong>Email jest już wykorzystany do rejestracji</strong>";
+            echo "</div>";
             $isOk = false;
         }
         if ($isOk) {
@@ -25,6 +46,9 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
             $user->setPassword($password);
 
             $user->save($conn);
+            echo "<div class=\"alert alert-success\">";
+            echo "<strong>Zarejestrowałeś się !</strong>";
+            echo "</div>";
         }
     }
 }
@@ -36,25 +60,25 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
             <div class="form-group">
                 <label class="col-lg-2 control-label">Email</label>
                 <div class="col-lg-3">
-                    <input type="email" class="form-control" name="email" placeholder="Email">
+                    <input type="email" class="form-control" name="email" placeholder="E-mail">
                 </div>
             </div>
             <div class="form-group" align="center">
                 <label class="col-lg-2 control-label">Hasło</label>
                 <div class="col-lg-3">
-                    <input type="password" class="form-control" name="password" placeholder="Password">
+                    <input type="password" class="form-control" name="password" placeholder="Hasło">
                 </div>
             </div>
             <div class="form-group" align="center">
                 <label class="col-lg-2 control-label">Potwierdź hasło</label>
                 <div class="col-lg-3">
-                    <input type="password" class="form-control" name="password2" placeholder="Confirm password">
+                    <input type="password" class="form-control" name="password2" placeholder="Potwierdź hasło">
                 </div>
             </div>
             <div class="form-group" align="center">
-                <label class="col-lg-2 control-label">Nazwa użytkownika</label>
+                <label class="col-lg-2 control-label">Login</label>
                 <div class="col-lg-3">
-                    <input type="text" class="form-control" name="username" placeholder="Username">
+                    <input type="text" class="form-control" name="username" placeholder="Login">
                 </div>
             </div>
             <div class="form-group" align="center">

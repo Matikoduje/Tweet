@@ -72,4 +72,16 @@ class Comment
         }
         return $result;
     }
+
+    static public function countHowManyCommentsByTweetId(mysqli $conn, $tweetId)
+    {
+        $sql = "SELECT COUNT(tweet_id) AS `count` FROM comment WHERE tweet_id=" . $tweetId;
+        $conn->query("SET NAMES 'utf8'");
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
+require_once '../src/connection.php';
 require_once '../src/User.php';
-require_once '../src/Twitter.php';
 session_start();
 ?>
 <!DOCTYPE html>
@@ -19,14 +19,8 @@ session_start();
         <ul class="nav navbar-nav">
             <?php
             if (isset($_SESSION['user'])) {
-                ?>
-                <li>
-                    <a href="createTweet.php">Stwórz Twiita</a>
-                </li>
-                <li>
-                    <a href="showAll.php">Pokaż wszystkie</a>
-                </li>
-                <?php
+                $username = User::findUserNameByUserId($conn, $_SESSION['user']);
+                echo "<li><a href=\"profile.php\"><span class=\"label\" style=\"color: #008000; font-size: 120%; font-weight: bold;\">$username</span></a></li>";
             }
             ?>
         </ul>
@@ -34,7 +28,7 @@ session_start();
             <?php
             if (isset($_SESSION['user'])) {
                 ?>
-                <li><a href="..."><span class="label" style="color: #004b63; font-size: 120%; font-weight: bold;">Edytuj profil</span></a>
+                <li><a href="editprofile.php"><span class="label" style="color: #004b63; font-size: 120%; font-weight: bold;">Edytuj profil</span></a>
                 </li>
                 <li><a href="logout.php"><span class="label" style="color: #800000; font-size: 120%; font-weight: bold;">Wyloguj się</span></a>
                 </li>
