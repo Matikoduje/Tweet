@@ -48,7 +48,6 @@ class User
     public function save(mysqli $conn)
     {
         if (-1 === $this->id) {
-            $conn->query("SET NAMES 'utf8'");
             $sql = sprintf("INSERT INTO `user` (`email`, `username`, `password`) VALUES ('%s', '%s', '%s')", $this->email, $this->username, $this->password);
             $result = $conn->query($sql); /// sprintf wstawia w miejsca %s stringi które są podane jako zmienne.
 
@@ -67,7 +66,6 @@ class User
 
     static public function loadUserByUsername(mysqli $conn, $username)
     {
-        $conn->query("SET NAMES 'utf8'");
         $username = $conn->real_escape_string($username);
         $sql = "SELECT * FROM `user` WHERE `username` = '$username'";
         $result = $conn->query($sql);
@@ -92,7 +90,6 @@ class User
 
     static public function loadUserById(mysqli $conn, $id)
     {
-        $conn->query("SET NAMES 'utf8'");
         $id = $conn->real_escape_string($id);
         $sql = "SELECT * FROM `user` WHERE `id` = '$id'";
         $result = $conn->query($sql);
@@ -146,7 +143,6 @@ class User
 
     static public function findUserIdByUsername($conn, $username)
     {
-        $conn->query("SET NAMES 'utf8'");
         $username = $conn->real_escape_string($username);
         $sql = "SELECT id FROM `user` WHERE username='" . $username . "'";
         $result = $conn->query($sql);
@@ -165,7 +161,6 @@ class User
 
     static public function findUserNameByUserId($conn, $id)
     {
-        $conn->query("SET NAMES 'utf8'");
         $sql = "SELECT username FROM `user` WHERE id='" . $id . "'";
         $result = $conn->query($sql);
 
@@ -179,7 +174,6 @@ class User
 
     public function compareUsername($conn, $username)
     {
-        $conn->query("SET NAMES 'utf8'");
         $sql = "SELECT COUNT(id) AS id FROM `user` WHERE username='" . $username . "'";
         $result = $conn->query($sql);
 
@@ -193,7 +187,6 @@ class User
 
     public function compareEmail($conn, $email)
     {
-        $conn->query("SET NAMES 'utf8'");
         $sql = "SELECT COUNT(id) AS id FROM `user` WHERE email='" . $email . "'";
         $result = $conn->query($sql);
 
@@ -207,7 +200,6 @@ class User
 
     public function changeEmail($conn)
     {
-        $conn->query("SET NAMES 'utf8'");
         $this->email = $conn->real_escape_string($this->email);
         $sql = "UPDATE `user` SET email='" . $this->email . "' WHERE id=$this->id";
         $result = $conn->query($sql);
@@ -221,7 +213,6 @@ class User
 
     public function changePassword($conn)
     {
-        $conn->query("SET NAMES 'utf8'");
         $sql = "UPDATE `user` SET password='" . $this->password . "' WHERE id=$this->id";
         $result = $conn->query($sql);
 

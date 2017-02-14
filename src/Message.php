@@ -49,7 +49,6 @@ class Message
     {
         if (-1 === $this->id) {
             $this->text = $conn->real_escape_string($this->text);
-            $conn->query("SET NAMES 'utf8'");
             $sql = sprintf("INSERT INTO `message` (`sender_id`, `text`, `receiver_id`, `creation_date`, `is_read`) VALUES ('%d', '%s', '%d', '%s', '%d')", $this->senderId, $this->text, $this->receiverId, $this->creationDate, $this->isRead);
             $result = $conn->query($sql);
 
@@ -67,5 +66,60 @@ class Message
             return false;
         }
         return true;
+    }
+
+    public static function loadAllMessagesSendByUserId(mysqli $conn, $userId) {
+        $sql = "SELECT user.username AS `username`, receiver_id AS receiver, `text`, creation_date AS dat, message.id AS messageId, is_read FROM message JOIN user ON message.receiver_id=user.id WHERE sender_id=" . $userId . " ORDER BY dat DESC";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
+
+    public static function loadAllMessagesReceivedByUserId(mysqli $conn, $userId) {
+        $sql = "SELECT user.username AS `username`, sender_id AS sender, `text`, creation_date AS dat, message.id AS messageId, is_read FROM message JOIN user ON message.sender_id=user.id WHERE receiver_id=" . $userId . " ORDER BY dat DESC";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
+    }
+
+    public static function countNewMessages(mysqli $conn, $userId) {
+        $sql = "SELECT COUNT(id) AS `count` FROM message WHERE is_read=0 AND receiver_id=$userId";
+        $result = $conn->query($sql);
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        foreach ($result as $row) {
+            if ($row['count'] > 0) {
+                return $row['count'];
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public static function loadMessageByMessageId(mysqli $conn, $messageId, $ok) {
+        if (true == $ok) {
+            $sql = "SELECT user.username AS `username`, receiver_id, `text`, creation_date, is_read FROM message JOIN user ON message.sender_id=user.id WHERE message.id=$messageId";
+        } else {
+            $sql = "UPDATE message SET is_read=1 WHERE id=$messageId";
+            $result = $conn->query($sql);
+            if (!$result) {
+                die('Querry error: ' . $conn->error);
+            }
+            $sql = "SELECT user.username AS `username`, sender_id, `text`, creation_date, is_read FROM message JOIN user ON message.receiver_id=user.id WHERE message.id=$messageId";
+        }
+
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            die('Querry error: ' . $conn->error);
+        }
+        return $result;
     }
 }

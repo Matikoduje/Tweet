@@ -78,7 +78,6 @@ if (!isset($_SESSION['user'])) {
         }
     }
     ?>
-    <!-- Modal -->
     <div class="col-lg-4">
         <div class="twt-wrapper">
             <div class="panel panel-info">
@@ -177,7 +176,6 @@ if (!isset($_SESSION['user'])) {
                         }
                         ?>
                     </ul>
-                    <span class="text-danger">237K users active</span>
                 </div>
             </div>
         </div>
@@ -262,7 +260,8 @@ if (!isset($_SESSION['user'])) {
                         if (isset($_POST['userTweets'])) {
                             $userTweets = $_POST['userTweets'];
                         } else if (isset($_POST['receiverId'])) {
-                            $userTweets = $receiverId;
+                            $userTweets = $_POST['receiverId'];
+                            $findUser = User::findUserNameByUserId($conn, $userTweets);
                         } else {
                             $findUser = $_POST['findUser'];
                             $userTweets = User::findUserIdByUsername($conn, $findUser);

@@ -21,7 +21,13 @@ session_start();
             <?php
             if (isset($_SESSION['user'])) {
                 $username = User::findUserNameByUserId($conn, $_SESSION['user']);
-                echo "<li><a href=\"profile.php\"><span class=\"label\" style=\"color: #008000; font-size: 120%; font-weight: bold;\">$username</span></a></li>";
+                $count = Message::countNewMessages($conn, $_SESSION['user']);
+                if (false == $count) {
+                    echo "<li><a href=\"profile.php\"><span class=\"label\" style=\"color: #008000; font-size: 120%; font-weight: bold;\">$username</span></a></li>";
+                } else {
+                    echo "<li><a href=\"profile.php\"><span class=\"label\" style=\"color: #008000; font-size: 120%; font-weight: bold;\">" . $username . "(" . $count . ")</span></a></li>";
+
+                }
             }
             ?>
         </ul>
